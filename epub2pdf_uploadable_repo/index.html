@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EPUB → PDF (GitHub Actions)</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Inter,Arial;margin:0;background:#0ea5e910}
+    header{padding:22px;border-bottom:1px solid #e5e7eb;background:white;position:sticky;top:0}
+    h1{margin:0;font-size:1.4rem}
+    main{max-width:920px;margin:0 auto;padding:22px;display:grid;gap:16px}
+    .card{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 6px 20px #0000000d}
+    code,kbd{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:2px 6px}
+    ul{margin:8px 0 0 18px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .item{border:1px dashed #e5e7eb;border-radius:12px;padding:12px;background:#fafafa}
+    a{color:#2563eb;text-decoration:none} a:hover{text-decoration:underline}
+    footer{padding:16px;color:#6b7280;text-align:center}
+    .note{color:#334155}
+  </style>
+</head>
+<body>
+<header><h1>EPUB → PDF (automaticky přes GitHub Actions)</h1></header>
+<main>
+  <div class="card">
+    <p class="note"><strong>Důležité:</strong> Pokud jsi nahrál tento repozitář přes web, je potřeba ještě <em>jednou</em> vytvořit workflow soubor na GitHubu: <code>.github/workflows/convert_epub.yml</code> (viz README).</p>
+    <p><strong>Jak použít:</strong></p>
+    <ol>
+      <li>Nahraj své <code>.epub</code> soubory do složky <code>/epub</code>.</li>
+      <li>GitHub Actions je převede do PDF a uloží do <code>/pdf</code>.</li>
+      <li>Seznam PDF dole se obnoví po doběhnutí workflow (~1–2 min).</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>Hotové PDF soubory</h2>
+    <div id="list" class="grid"></div>
+  </div>
+</main>
+<footer>Konverze běží v GitHub Actions pomocí Calibre (ebook-convert).</footer>
+
+<script>
+async function loadList(){
+  try {
+    const res = await fetch('pdf/pdf_list.json?cache='+(Date.now()));
+    if(!res.ok) throw new Error('Manifest nenalezen');
+    const arr = await res.json();
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    if(!arr.length){ list.innerHTML='<div class="item">Zatím žádné PDF. Nahraj do <code>/epub</code> své knihy.</div>'; return; }
+    arr.forEach(p=>{
+      const name = p.split('/').pop();
+      const a = document.createElement('a');
+      a.href = p;
+      a.textContent = name;
+      a.target = '_blank';
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.appendChild(a);
+      list.appendChild(div);
+    });
+  } catch (e){
+    document.getElementById('list').innerHTML = '<div class="item">Manifest ještě není vytvořen. Nahraj EPUB do <code>/epub</code>.</div>';
+  }
+}
+loadList();
+</script>
+</body>
+</html>
